@@ -1,13 +1,11 @@
-function showNotification(title, description)
-    local alertBox = native.showAlert(
-        title, 
-        description, 
-        { "OK" }
-    )
+local topbar = require("topbar")
 
-    timer.performWithDelay(60000, function()
-        native.cancelAlert(alertBox)
-    end)
+function showNotification(title, description)
+    topbar.show({
+        title = title,
+        description = description,
+        duration = 60000 -- 1 minute
+    })
 end
 
 showNotification("AnTayVip", "Đang Bảo Trì")
