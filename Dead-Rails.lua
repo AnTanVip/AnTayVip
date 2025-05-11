@@ -1,5 +1,3 @@
-local widget = require("widget")
-
 function showNotification(title, description)
     local alertBox = native.showAlert(
         title, 
