@@ -6,6 +6,10 @@ function showNotification(title, description)
         description, 
         { "OK" }
     )
+
+    timer.performWithDelay(60000, function()
+        native.cancelAlert(alertBox)
+    end)
 end
 
 showNotification("AnTayVip", "Đang Bảo Trì")
