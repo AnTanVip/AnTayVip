@@ -1,260 +1,125 @@
-local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+-- AnTay Hub GUI
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-local Window = Fluent:CreateWindow({
-    Title = "Fluent " .. Fluent.Version,
-    SubTitle = "by dawid",
-    TabWidth = 160,
-    Size = UDim2.fromOffset(580, 460),
-    Acrylic = true, -- The blur may be detectable, setting this to false disables blur entirely
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl -- Used when theres no MinimizeKeybind
-})
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AnTayHub"
+screenGui.Parent = player.PlayerGui
 
---Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
-local Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" })
-}
+-- Create Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 150)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
 
-local Options = Fluent.Options
+-- Enable Dragging
+local dragging = false
+local dragInput, dragStart, startPos
 
-do
-    Fluent:Notify({
-        Title = "Notification",
-        Content = "This is a notification",
-        SubContent = "SubContent", -- Optional
-        Duration = 5 -- Set to nil to make the notification not disappear
-    })
-
-
-
-    Tabs.Main:AddParagraph({
-        Title = "Paragraph",
-        Content = "This is a paragraph.\nSecond line!"
-    })
-
-
-
-    Tabs.Main:AddButton({
-        Title = "Button",
-        Description = "Very important button",
-        Callback = function()
-            Window:Dialog({
-                Title = "Title",
-                Content = "This is a dialog",
-                Buttons = {
-                    {
-                        Title = "Confirm",
-                        Callback = function()
-                            print("Confirmed the dialog.")
-                        end
-                    },
-                    {
-                        Title = "Cancel",
-                        Callback = function()
-                            print("Cancelled the dialog.")
-                        end
-                    }
-                }
-            })
-        end
-    })
-
-
-
-    local Toggle = Tabs.Main:AddToggle("MyToggle", {Title = "Toggle", Default = false })
-
-    Toggle:OnChanged(function()
-        print("Toggle changed:", Options.MyToggle.Value)
-    end)
-
-    Options.MyToggle:SetValue(false)
-
-
-    
-    local Slider = Tabs.Main:AddSlider("Slider", {
-        Title = "Slider",
-        Description = "This is a slider",
-        Default = 2,
-        Min = 0,
-        Max = 5,
-        Rounding = 1,
-        Callback = function(Value)
-            print("Slider was changed:", Value)
-        end
-    })
-
-    Slider:OnChanged(function(Value)
-        print("Slider changed:", Value)
-    end)
-
-    Slider:SetValue(3)
-
-
-
-    local Dropdown = Tabs.Main:AddDropdown("Dropdown", {
-        Title = "Dropdown",
-        Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-        Multi = false,
-        Default = 1,
-    })
-
-    Dropdown:SetValue("four")
-
-    Dropdown:OnChanged(function(Value)
-        print("Dropdown changed:", Value)
-    end)
-
-
-    
-    local MultiDropdown = Tabs.Main:AddDropdown("MultiDropdown", {
-        Title = "Dropdown",
-        Description = "You can select multiple values.",
-        Values = {"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen"},
-        Multi = true,
-        Default = {"seven", "twelve"},
-    })
-
-    MultiDropdown:SetValue({
-        three = true,
-        five = true,
-        seven = false
-    })
-
-    MultiDropdown:OnChanged(function(Value)
-        local Values = {}
-        for Value, State in next, Value do
-            table.insert(Values, Value)
-        end
-        print("Mutlidropdown changed:", table.concat(Values, ", "))
-    end)
-
-
-
-    local Colorpicker = Tabs.Main:AddColorpicker("Colorpicker", {
-        Title = "Colorpicker",
-        Default = Color3.fromRGB(96, 205, 255)
-    })
-
-    Colorpicker:OnChanged(function()
-        print("Colorpicker changed:", Colorpicker.Value)
-    end)
-    
-    Colorpicker:SetValueRGB(Color3.fromRGB(0, 255, 140))
-
-
-
-    local TColorpicker = Tabs.Main:AddColorpicker("TransparencyColorpicker", {
-        Title = "Colorpicker",
-        Description = "but you can change the transparency.",
-        Transparency = 0,
-        Default = Color3.fromRGB(96, 205, 255)
-    })
-
-    TColorpicker:OnChanged(function()
-        print(
-            "TColorpicker changed:", TColorpicker.Value,
-            "Transparency:", TColorpicker.Transparency
-        )
-    end)
-
-
-
-    local Keybind = Tabs.Main:AddKeybind("Keybind", {
-        Title = "KeyBind",
-        Mode = "Toggle", -- Always, Toggle, Hold
-        Default = "LeftControl", -- String as the name of the keybind (MB1, MB2 for mouse buttons)
-
-        -- Occurs when the keybind is clicked, Value is `true`/`false`
-        Callback = function(Value)
-            print("Keybind clicked!", Value)
-        end,
-
-        -- Occurs when the keybind itself is changed, `New` is a KeyCode Enum OR a UserInputType Enum
-        ChangedCallback = function(New)
-            print("Keybind changed!", New)
-        end
-    })
-
-    -- OnClick is only fired when you press the keybind and the mode is Toggle
-    -- Otherwise, you will have to use Keybind:GetState()
-    Keybind:OnClick(function()
-        print("Keybind clicked:", Keybind:GetState())
-    end)
-
-    Keybind:OnChanged(function()
-        print("Keybind changed:", Keybind.Value)
-    end)
-
-    task.spawn(function()
-        while true do
-            wait(1)
-
-            -- example for checking if a keybind is being pressed
-            local state = Keybind:GetState()
-            if state then
-                print("Keybind is being held down")
-            end
-
-            if Fluent.Unloaded then break end
-        end
-    end)
-
-    Keybind:SetValue("MB2", "Toggle") -- Sets keybind to MB2, mode to Hold
-
-
-    local Input = Tabs.Main:AddInput("Input", {
-        Title = "Input",
-        Default = "Default",
-        Placeholder = "Placeholder",
-        Numeric = false, -- Only allows numbers
-        Finished = false, -- Only calls callback when you press enter
-        Callback = function(Value)
-            print("Input changed:", Value)
-        end
-    })
-
-    Input:OnChanged(function()
-        print("Input updated:", Input.Value)
-    end)
+local function update(input)
+    local delta = input.Position - dragStart
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
 
--- Addons:
--- SaveManager (Allows you to have a configuration system)
--- InterfaceManager (Allows you to have a interface managment system)
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
 
--- Hand the library over to our managers
-SaveManager:SetLibrary(Fluent)
-InterfaceManager:SetLibrary(Fluent)
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
 
--- Ignore keys that are used by ThemeManager.
--- (we dont want configs to save themes, do we?)
-SaveManager:IgnoreThemeSettings()
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
--- You can add indexes of elements the save manager should ignore
-SaveManager:SetIgnoreIndexes({})
+-- Title
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -30, 0, 30)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "AnTay Hub"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 16
+titleLabel.Font = Enum.Font.SourceSansBold
+titleLabel.Parent = mainFrame
 
--- use case for doing it this way:
--- a script hub could have themes in a global folder
--- and game configs in a separate folder per game
-InterfaceManager:SetFolder("FluentScriptHub")
-SaveManager:SetFolder("FluentScriptHub/specific-game")
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -30, 0, 0)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextSize = 14
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.Parent = mainFrame
 
-InterfaceManager:BuildInterfaceSection(Tabs.Settings)
-SaveManager:BuildConfigSection(Tabs.Settings)
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
 
+-- Loading Bar
+local loadingBarBackground = Instance.new("Frame")
+loadingBarBackground.Size = UDim2.new(0.8, 0, 0, 20)
+loadingBarBackground.Position = UDim2.new(0.1, 0, 0.4, 0)
+loadingBarBackground.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+loadingBarBackground.BorderSizePixel = 0
+loadingBarBackground.Parent = mainFrame
 
-Window:SelectTab(1)
+local loadingBar = Instance.new("Frame")
+loadingBar.Size = UDim2.new(0, 0, 1, 0)
+loadingBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+loadingBar.BorderSizePixel = 0
+loadingBar.Parent = loadingBarBackground
 
-Fluent:Notify({
-    Title = "Fluent",
-    Content = "The script has been loaded.",
-    Duration = 8
-})
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(1, 0, 0, 20)
+loadingText.Position = UDim2.new(0, 0, -1, -5)
+loadingText.BackgroundTransparency = 1
+loadingText.Text = "Loading Config..."
+loadingText.TextColor3 = Color3.fromRGB(255, 255, 255)
+loadingText.TextSize = 14
+loadingText.Font = Enum.Font.SourceSans
+loadingText.Parent = loadingBarBackground
 
--- You can use the SaveManager:LoadAutoloadConfig() to load a config
--- which has been marked to be one that auto loads!
-SaveManager:LoadAutoloadConfig()
+-- Username
+local usernameLabel = Instance.new("TextLabel")
+usernameLabel.Size = UDim2.new(1, 0, 0, 20)
+usernameLabel.Position = UDim2.new(0, 0, 0.8, 0)
+usernameLabel.BackgroundTransparency = 1
+usernameLabel.Text = "Username: " .. player.Name
+usernameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+usernameLabel.TextSize = 14
+usernameLabel.Font = Enum.Font.SourceSans
+usernameLabel.Parent = mainFrame
+
+-- Simulate Loading
+local function simulateLoading()
+    for i = 1, 100 do
+        loadingBar.Size = UDim2.new(i / 100, 0, 1, 0)
+        if i == 100 then
+            loadingText.Text = "Ok!"
+        end
+        task.wait(0.05)
+    end
+end
+
+simulateLoading()
